@@ -1,11 +1,11 @@
 CC = clang++
 CFLAGS = -g -O3
 
-.PHONY: all 
+.PHONY: all
 
 all: 
-	$(CC) $(CFLAGS) codegen.cpp `llvm-config --cxxflags --ldflags --system-libs --libs core`
+	$(CC) $(CFLAGS) toy.cpp -o toy `llvm-config --cxxflags --ldflags --system-libs --libs core support`
 
 clean:
-	rm -fr a.out *.o
+	rm -fr toy *.o
 	

@@ -1,11 +1,10 @@
 CC = clang++
 CFLAGS = -g -O3
 
-.PHONY: all 
+.PHONY: all
 
 all: 
-	$(CC) $(CFLAGS) parser.cpp
+	$(CC) $(CFLAGS) toy.cpp -o toy `llvm-config --cxxflags --ldflags --system-libs --libs support`
 
 clean:
-	rm -fr a.out *.o
-	
+	rm -fr toy *.o
