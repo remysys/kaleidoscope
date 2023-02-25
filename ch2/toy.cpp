@@ -268,52 +268,40 @@ static std::unique_ptr<ExprAST> ParsePrimary() {
   }
 }
 
-/// binoprhs
-///   ::= ('+' primary)*
-static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
-                                              std::unique_ptr<ExprAST> LHS) {
-  // If this is a binop, find its precedence.
-  while (true) {
-    int TokPrec = GetTokPrecedence();
+/// RecursiveParseExpression
 
-    // If this is a binop that binds at least as tightly as the current binop,
-    // consume it, otherwise we are done.
-    if (TokPrec < ExprPrec)
-      return LHS;
-
-    // Okay, we know this is a binop.
-    int BinOp = CurTok;
-    getNextToken(); // eat binop
-
-    // Parse the primary expression after the binary operator.
-    auto RHS = ParsePrimary();
-    if (!RHS)
-      return nullptr;
-
-    // If BinOp binds less tightly with RHS than the operator after RHS, let
-    // the pending operator take RHS as its LHS.
-    int NextPrec = GetTokPrecedence();
-    if (TokPrec < NextPrec) {
-      RHS = ParseBinOpRHS(TokPrec + 1, std::move(RHS));
-      if (!RHS)
-        return nullptr;
-    }
-
-    // Merge LHS/RHS.
-    LHS = std::make_unique<BinaryExprAST>(BinOp, std::move(LHS),
-                                           std::move(RHS));
-  }
-}
-
-/// expression
-///   ::= primary binoprhs
-///
-static std::unique_ptr<ExprAST> ParseExpression() {
+static std::unique_ptr<ExprAST> RecursiveParseExpression(int ExprPrec) {
   auto LHS = ParsePrimary();
   if (!LHS)
     return nullptr;
+  
+  int TokPrec = GetTokPrecedence();
+  if (TokPrec < 0) {
+    // -1 if the token is not a binary operator
+    return LHS;
+  }
 
-  return ParseBinOpRHS(0, std::move(LHS));
+  int BinOp = CurTok;
+
+  while (ExprPrec < TokPrec) {
+    getNextToken(); // eat binop
+    
+    auto RHS = RecursiveParseExpression(TokPrec);
+    if (!RHS) {
+      return nullptr;
+    }
+
+    LHS = std::make_unique<BinaryExprAST>(BinOp, std::move(LHS), std::move(RHS));
+
+    TokPrec = GetTokPrecedence();
+  }
+
+  return LHS;
+}
+
+
+static std::unique_ptr<ExprAST> ParseExpression() {
+  return RecursiveParseExpression(0);
 }
 
 /// prototype
