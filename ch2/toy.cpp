@@ -281,11 +281,10 @@ static std::unique_ptr<ExprAST> RecursiveParseExpression(int ExprPrec) {
     return LHS;
   }
 
-  int BinOp = CurTok;
-
   while (ExprPrec < TokPrec) {
+    int BinOp = CurTok;
     getNextToken(); // eat binop
-    
+
     auto RHS = RecursiveParseExpression(TokPrec);
     if (!RHS) {
       return nullptr;
@@ -298,7 +297,6 @@ static std::unique_ptr<ExprAST> RecursiveParseExpression(int ExprPrec) {
 
   return LHS;
 }
-
 
 static std::unique_ptr<ExprAST> ParseExpression() {
   return RecursiveParseExpression(0);
