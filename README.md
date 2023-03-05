@@ -1,2 +1,2 @@
 # Kaleidoscope
-Implementing a simple language "Kaleidoscope" using LLVM components
+implementing a simple language "Kaleidoscope" using LLVM 11.x components
